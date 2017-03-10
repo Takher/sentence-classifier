@@ -138,8 +138,8 @@ class TFLogisticRegression:
         selecter = tf.concat([tf.zeros([1, 1]), tf.ones([n_features, 1])], 0)
 
         reg_update = (W / (self.C * batch_size)) * selecter
-        gradient = (tf.reshape(tf.reduce_mean(X * (a - y), 0), [301, 1]) +
-                    reg_update)
+        gradient = (tf.reshape(tf.reduce_mean(X * (a - y), 0),
+                               [n_features+1, 1]) + reg_update)
 
         # Objective function.
         cost_reg_term = (1.0/(self.C*2))*(tf.reduce_sum(tf.square(W*selecter)))

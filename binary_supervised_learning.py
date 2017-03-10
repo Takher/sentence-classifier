@@ -18,15 +18,15 @@ parser.add_argument('input', help='choose from: "MR", "SO", "CR", "MPQA"',
 args = parser.parse_args()
 
 # Model now contains a dictionary {word:vector}. Where each word is a key
-# corresponding to a 300-d row vector, shape (300,).
+# corresponding to a 'n_features'-d row vector, shape (n_features,).
 model = load_glove_model('glove.840B.300d.txt')
 
 # Load data in to lists of positive and negative examples.
 pos, neg = load_data(args.input)
 
-# Shape (n_pos_samples, 300)
+# Shape (n_pos_samples, n_features)
 pos_vectors = np.asarray(sentences2vec(pos, model))
-# Shape (n_neg_samples, 300)
+# Shape (n_neg_samples, n_features)
 neg_vectors = np.asarray(sentences2vec(neg, model))
 
 # Prepare a matrix containing both positive and negative samples

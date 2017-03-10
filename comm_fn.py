@@ -13,7 +13,8 @@ def load_glove_model(gloveFile, word_count=100000):
 
     :param gloveFile: textfile
         Contains glove vectors. Each line contains a word string followed by a
-        300-dimensional vector to describe the word.
+        'n_features'-dimensional vector to describe the word. Where n_features
+        is the number of features.
 
     :param word_count: int, default: 100000
         Number of words to load from the gloveFile
@@ -21,7 +22,7 @@ def load_glove_model(gloveFile, word_count=100000):
     :return: dictionary
         {'word': vector}
         word = string of the word we wish to load
-        vector = 300-d vectors to describe the word
+        vector = 'n_features'-d vectors to describe the word
     """
     print("Loading Glove Vectors")
     path = './data/gloveFile_done_%d.npy' % (word_count)
@@ -58,7 +59,7 @@ def sentences2vec(sentences, glove):
         Example: [['first', 'sentence'], ['second', 'sentence'],...]
 
     :param glove: dictionary
-        {'word': vector}, where vector is 300-dimensional.
+        {'word': vector}, where vector is 'n_features'-dimensional.
 
     :return: list
         List of sentences as a single vector.
@@ -75,8 +76,7 @@ def sentences2vec(sentences, glove):
         # faster than checking to see if we have it and then adjusting
         # matched_words to take the correct average.
         for word in sentence:
-            # Changing this word (',') affects the overall accuracy.
-            sum_of_words += glove.get(word, glove[','])
+            sum_of_words += glove.get(word, 0)
         # In theory, we should have sentences that have at least 1 element.
         # However for some datasets, such as CR, the if statement is necessary,
         # to ensure we don't divide by zero.

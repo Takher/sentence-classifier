@@ -2,3 +2,4 @@
 glove.840B.300d.txt
 /data/gloveFile_done_*.npy
 *.pyc
+tester_file.py
