@@ -147,4 +147,3 @@ class TFLogisticRegression:
 
             self.weight_ = sess.run(W, {X: X_batch, y: y_batch})
         return self
-

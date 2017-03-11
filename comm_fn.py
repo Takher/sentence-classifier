@@ -3,6 +3,7 @@ import os.path
 
 import numpy as np
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve, train_test_split
 
@@ -86,7 +87,7 @@ def sentences2vec(sentences, glove):
     return sentence_vectors
 
 
-def load_data(type, loc='./data/'):
+def load_data(type, loc='./data/', remove_stop=False):
     """Loads data from the directory, loc.
 
     :param type: string  # Can I do this to speed things up?
@@ -117,6 +118,10 @@ def load_data(type, loc='./data/'):
         pos, neg = load_cr(loc)
     if type == 'MPQA':
         pos, neg = load_mpqa(loc)
+    # Remove stop words
+    if remove_stop == True:
+        pos = remove_stop_words(pos)
+        neg = remove_stop_words(neg)
     return pos, neg
 
 
@@ -315,3 +320,23 @@ def plot_curve(clf, X_train, y_train, title, label='label', color='b', cv=3,
     plt.plot(train_sizes, cv_scores_mean, 'o-', color=color, label=label)
     plt.legend(loc="best")
     return plt
+
+def remove_stop_words(full_sentences):
+    """ Removes stopwords from full_sentences.
+    Parameters
+    ----------
+    full_sentences: list
+        Each item in the list represents a sentence. Each sentence contains
+        tokenized words.
+    Returns
+    -------
+    filtered_sentences : list
+        New list of sentences with stopwords removed.
+    """
+    stop_words = stopwords.words('english')
+    stop_words.extend((',', '.'))
+    filtered_sentences = []
+    for sentence in full_sentences:
+        filtered_sentence = [w for w in sentence if w.lower() not in stop_words]  # get rid of if not
+        filtered_sentences.append(filtered_sentence)
+    return filtered_sentences

@@ -1,11 +1,11 @@
 from __future__ import print_function
 import argparse
 
+import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import numpy as np
 
 from comm_fn import sentences2vec, load_glove_model, load_data, plot_curve
 from tf_logistic_regression import TFLogisticRegression
@@ -22,7 +22,7 @@ args = parser.parse_args()
 model = load_glove_model('glove.840B.300d.txt')
 
 # Load data in to lists of positive and negative examples.
-pos, neg = load_data(args.input)
+pos, neg = load_data(args.input, remove_stop=False)
 
 # Shape (n_pos_samples, n_features)
 pos_vectors = np.asarray(sentences2vec(pos, model))
