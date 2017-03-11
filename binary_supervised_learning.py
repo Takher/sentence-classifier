@@ -46,7 +46,7 @@ X_test = sc.transform(X_test)
 
 # Run training and testing with sklearn.
 print('Evaluating...using sklearn')
-clf = LogisticRegression()
+clf = LogisticRegression(tol=1e-8, C=100.0, max_iter=1000) # Match tf parameters
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)
 print('Test samples: %d  Misclassified samples: %d'
@@ -68,9 +68,9 @@ print('Test samples: %d  Misclassified samples: %d'
 print('Test accuracy: %.4f' % tf_clf.score(X_test, y_test))
 
 # Plot learning curves.
-for param, color in zip([0.003, 0.01, 0.03, 0.1, 0.3],
-                        ['r', 'g', 'b', 'y', 'k']):
-    clf = LogisticRegression(C=param)
-    plot_curve(clf, X_train, y_train, title="Logistic Regression (Varying C)",
-               label='C = ' + str(param), color=color)
-plt.show()
+# for param, color in zip([0.003, 0.01, 0.03, 0.1, 0.3],
+#                         ['r', 'g', 'b', 'y', 'k']):
+#     clf = LogisticRegression(C=param)
+#     plot_curve(clf, X_train, y_train, title="Logistic Regression (Varying C)",
+#                label='C = ' + str(param), color=color)
+# plt.show()
