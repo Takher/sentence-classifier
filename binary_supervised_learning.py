@@ -3,7 +3,7 @@ import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from comm_fn import sentences2vec, load_glove_model
@@ -44,17 +44,24 @@ sc.fit(X_train)
 X_train = sc.transform(X_train)
 X_test = sc.transform(X_test)
 
-# Run training and testing with sklearn.
-print('Evaluating...using sklearn')
+# Run training and testing with LogisticRegression.
+print('Evaluating...using LogisticRegression')
+clf = LogisticRegression(random_state=0, C=100.0)
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+print('Test samples: %d  Misclassified samples: %d'
+      %(y_test.shape[0], (y_test != y_pred).sum()))
+print('Test accuracy: %.4f'%clf.score(X_test, y_test))
+
+# Run training and testing with SGDClassifier.
+print('Evaluating...using SGDClassifier')
 rand = np.random.RandomState(0)
 batch_size = 500
-clf = SGDClassifier(loss='log', random_state=0, penalty='l2', alpha=0.01)
+clf = SGDClassifier(random_state=0, loss='log', penalty='l2', alpha=0.01)
 for _ in range(1000):
     # Select random minibatch.
     X_batch, y_batch = minibatch(rand, X_train, y_train, batch_size)
-
     clf.partial_fit(X_batch, y_batch, classes=np.array(([0,1])))
-
 y_pred = clf.predict(X_test)
 print('Test samples: %d  Misclassified samples: %d'
       %(y_test.shape[0], (y_test != y_pred).sum()))

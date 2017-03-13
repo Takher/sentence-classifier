@@ -28,7 +28,7 @@ class TFLogisticRegression:
         Coefficient of features, where n_features is the number of features.
         The intercept (a.ka. bias) term as the first element.
     """
-    def __init__(self, C=100.0, max_iter=1000, random_state=0, tol=1e-8):
+    def __init__(self, C=0.1, max_iter=1000, random_state=0, tol=1e-8):
         """Initialize model attributes."""
         self.C = C
         self.max_iter = max_iter
@@ -122,11 +122,10 @@ class TFLogisticRegression:
 
         # Objective function.
         cost_reg_term = (1.0/(self.C*2))*(tf.matmul(tf.transpose(W*selecter),
-                                                    W*selecter))
-        # J_vec contains the cost for each sample, shape (batch_size, 1)
-        J_vec = (-y * tf.log(a + 1e-7) - (1 - y) * tf.log(1 - a + 1e-7) +
-                 cost_reg_term) / n_samples
-        J = tf.reduce_sum(J_vec)
+                                                    W*selecter))/batch_size
+        # J_vec contains the raw cost for each sample, shape (batch_size, 1)
+        J_vec = (-y*tf.log(a+1e-7)-(1-y)*tf.log(1-a+1e-7))/batch_size
+        J = tf.reduce_sum(J_vec) + cost_reg_term
 
         # AdamOptimizer uses a momentum approach to minimise cost.
         optimizer = tf.train.AdamOptimizer(learning_rate).minimize(J)
