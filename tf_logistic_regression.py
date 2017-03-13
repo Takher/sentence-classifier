@@ -88,7 +88,7 @@ class TFLogisticRegression:
             n_features is the number of features.
         y_data : array-like, shape (n_samples,)
             Target vector relative to X.
-        batch_size : int, default: 100
+        batch_size : int, default: 500
             Size of batch used for computing mini-batch gradient descent
         learning_rate: float, default: 0.01
             Used to control rate of convergence for gradient descent.
