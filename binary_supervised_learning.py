@@ -3,11 +3,11 @@ import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
-from comm_fn import sentences2vec, load_glove_model, load_data, plot_curve
+from comm_fn import sentences2vec, load_glove_model
+from comm_fn import load_data, plot_curve, minibatch
 from tf_logistic_regression import TFLogisticRegression
 
 # Handles the command-line argument, which specifies the dataset to be used.
@@ -46,8 +46,15 @@ X_test = sc.transform(X_test)
 
 # Run training and testing with sklearn.
 print('Evaluating...using sklearn')
-clf = LogisticRegression(tol=1e-8, C=100.0, max_iter=1000) # Match tf parameters
-clf.fit(X_train, y_train)
+rand = np.random.RandomState(0)
+batch_size = 500
+clf = SGDClassifier(loss='log', random_state=0, penalty='l2', alpha=0.01)
+for _ in range(1000):
+    # Select random minibatch.
+    X_batch, y_batch = minibatch(rand, X_train, y_train, batch_size)
+
+    clf.partial_fit(X_batch, y_batch, classes=np.array(([0,1])))
+
 y_pred = clf.predict(X_test)
 print('Test samples: %d  Misclassified samples: %d'
       %(y_test.shape[0], (y_test != y_pred).sum()))

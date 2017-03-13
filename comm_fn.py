@@ -239,7 +239,7 @@ def load_mpqa(loc):
     return pos, neg
 
 
-def minibatch(rand, X_data, y_data, n_samples, batch_size):
+def minibatch(rand, X_data, y_data, batch_size):
     """ Takes a random batch of rows (examples) from X_data and y_data.
 
     Parameters
@@ -267,7 +267,7 @@ def minibatch(rand, X_data, y_data, n_samples, batch_size):
     y_batch : array-like, shape (batch_size, 1)
         Corresponding labels for the randomly selected examples from X_data.
     """
-    indices = rand.choice(n_samples, batch_size)
+    indices = rand.choice(X_data.shape[0], batch_size)
     X_batch, y_batch = X_data[indices], y_data[indices]
     return X_batch, y_batch
 
@@ -334,9 +334,10 @@ def remove_stop_words(full_sentences):
         New list of sentences with stopwords removed.
     """
     stop_words = stopwords.words('english')
-    stop_words.extend((',', '.'))
+    stop_words.extend((',', '.'))  # Removing punctuation increases accuracy.
     filtered_sentences = []
     for sentence in full_sentences:
-        filtered_sentence = [w for w in sentence if w.lower() not in stop_words]  # get rid of if not
+        filtered_sentence = [w for w in sentence
+                             if w.lower() not in stop_words]
         filtered_sentences.append(filtered_sentence)
     return filtered_sentences

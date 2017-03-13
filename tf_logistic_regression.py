@@ -129,7 +129,7 @@ class TFLogisticRegression:
         J = tf.reduce_sum(J_vec)
 
         # AdamOptimizer uses a momentum approach to minimise cost.
-        optimizer = tf.train.AdamOptimizer(0.01).minimize(J)
+        optimizer = tf.train.AdamOptimizer(learning_rate).minimize(J)
 
         with tf.Session() as sess:
             # Initialize Variables in graph.
@@ -137,8 +137,7 @@ class TFLogisticRegression:
 
             for _ in range(self.max_iter):
                 # Select random minibatch.
-                X_batch, y_batch = minibatch(rand, X_data, y_data,
-                                             n_samples, batch_size)
+                X_batch, y_batch = minibatch(rand, X_data, y_data, batch_size)
                 # By definition we have X[:, 0] set to one.
                 X_batch = np.c_[np.ones(([batch_size, 1])), X_batch]
 
