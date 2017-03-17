@@ -28,15 +28,15 @@ class TFLogisticRegression:
         Coefficient of features, where n_features is the number of features.
         The intercept (a.ka. bias) term as the first element.
     """
-    def __init__(self, C=0.1, max_iter=1000, random_state=0, tol=1e-8):
+    def __init__(self, reg=10, max_iter=1000, random_state=0, tol=1e-8):
         """Initialize model attributes."""
-        self.C = C
+        self.reg = reg
         self.max_iter = max_iter
         self.random_state = random_state
         self.tol = tol
 
-    def predict(self, X_data):
-        """Returns the mean accuracy on the given test data and labels.
+    def predict_proba(self, X_data):
+        """Returns the probability that the samples are from the positive class
         Parameters
         ----------
         X_data : array-like, shape (n_samples, n_features)
@@ -58,8 +58,23 @@ class TFLogisticRegression:
             # Activation function, shape (n_samples,1)
             a = tf.sigmoid(tf.matmul(X, self.weight_))
 
-            y_pred = sess.run(tf.round(a), {X: X_data})
+            y_pred = sess.run(a, {X: X_data})
         return y_pred
+
+    def predict(self, X_data):
+        """Uses the values from predict_proba to estimates the class that a
+        sample belongs to
+
+        Parameters
+        ----------
+        X_data : array-like, shape (n_samples, n_features)
+            Test samples.
+        Returns
+        -------
+        y_pred : array-like, shape (n_samples, 1)
+            Predicted labels for X.
+        """
+        return np.round(self.predict_proba(X_data))
 
     def score(self, X, y):
         """Returns the mean accuracy on the given test data and labels.
@@ -78,7 +93,7 @@ class TFLogisticRegression:
         score = correct_pred/y.shape[0]
         return score
 
-    def fit(self, X_data, y_data, batch_size=500, learning_rate=0.01, seed=0):
+    def fit(self, X_data, y_data, batch_size=500, learning_rate=0.01):
         """Fit the model according to the given training data using
         mini-batch Gradient Descent.
         Parameters
@@ -98,8 +113,8 @@ class TFLogisticRegression:
             Returns self.
         """
         # Ensure results are reproducible.
-        tf.set_random_seed(seed)
-        rand = np.random.RandomState(seed)  # Is it called seed?
+        tf.set_random_seed(self.random_state)
+        rand = np.random.RandomState(self.random_state)  # Is it called seed?
 
         n_samples, n_features = X_data.shape
 
@@ -121,7 +136,7 @@ class TFLogisticRegression:
         selecter = tf.concat([tf.zeros([1, 1]), tf.ones([n_features, 1])], 0)
 
         # Objective function.
-        cost_reg_term = (1.0/(self.C*2))*(tf.matmul(tf.transpose(W*selecter),
+        cost_reg_term = (self.reg/2)*(tf.matmul(tf.transpose(W*selecter),
                                                     W*selecter))/batch_size
         # J_vec contains the raw cost for each sample, shape (batch_size, 1)
         J_vec = (-y*tf.log(a+1e-7)-(1-y)*tf.log(1-a+1e-7))/batch_size
