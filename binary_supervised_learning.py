@@ -22,6 +22,9 @@ parser.add_argument('-i','--input',
 parser.add_argument('-p','--pca',
                     help='Specify the number of Principal components.',
                     type=int)
+parser.add_argument('-s', '--stop', action='store_true',
+                    help='Using the -s or --stop flag, removes the stopword '
+                         'from the data.')
 
 args = parser.parse_args()
 
@@ -37,7 +40,7 @@ SEED = 0 # Is this the correct name for this?
 model = load_glove_model('glove.840B.300d.txt')
 
 # Load data in to lists of positive and negative examples.
-pos, neg = load_data(args.input, remove_stop=False)
+pos, neg = load_data(args.input, remove_stop=args.stop)
 
 # Shape (n_pos_samples, n_features)
 pos_vectors = np.asarray(sentences2vec(pos, model))
@@ -60,7 +63,7 @@ X_train = sc.transform(X_train)
 X_test = sc.transform(X_test)
 
 # Optional PCA preprocessing
-if args.pca is not None:
+if args.pca:
     pca = PCA(n_components=args.pca)
     pca.fit(X_train)
     X_train = pca.transform(X_train)
