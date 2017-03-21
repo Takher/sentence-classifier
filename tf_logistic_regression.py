@@ -2,11 +2,12 @@ from __future__ import division
 
 import tensorflow as tf
 import numpy as np
+from sklearn.base import BaseEstimator
 
 from comm_fn import minibatch
 
 
-class TFLogisticRegression:
+class TFLogisticRegression(BaseEstimator):
     """ Logistic Regression classifier.
     Parameters
     ----------
@@ -28,14 +29,14 @@ class TFLogisticRegression:
         Coefficient of features, where n_features is the number of features.
         The intercept (a.ka. bias) term as the first element.
     """
-    def __init__(self, reg=10, max_iter=1000, random_state=0, tol=1e-8):
+    def __init__(self, max_iter=1000, random_state=0, tol=1e-8, name='ttt'):
         """Initialize model attributes."""
-        self.reg = reg
         self.max_iter = max_iter
         self.random_state = random_state
         self.tol = tol
+        self.name = name
 
-    def predict_proba(self, X_data):
+    def decision_function(self, X_data):
         """Returns the probability that the samples are from the positive class
         Parameters
         ----------
@@ -54,10 +55,8 @@ class TFLogisticRegression:
         X = tf.placeholder(tf.float32, [n_samples, n_features+1])
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-
             # Activation function, shape (n_samples,1)
             a = tf.sigmoid(tf.matmul(X, self.weight_))
-
             y_pred = sess.run(a, {X: X_data})
         return y_pred
 
@@ -74,7 +73,7 @@ class TFLogisticRegression:
         y_pred : array-like, shape (n_samples, 1)
             Predicted labels for X.
         """
-        return np.round(self.predict_proba(X_data))
+        return np.round(self.decision_function(X_data))
 
     def score(self, X, y):
         """Returns the mean accuracy on the given test data and labels.
@@ -93,7 +92,7 @@ class TFLogisticRegression:
         score = correct_pred/y.shape[0]
         return score
 
-    def fit(self, X_data, y_data, batch_size=500, learning_rate=0.01):
+    def fit(self, X_data, y_data, batch_size=500, learning_rate=0.01, reg=10):
         """Fit the model according to the given training data using
         mini-batch Gradient Descent.
         Parameters
@@ -125,8 +124,12 @@ class TFLogisticRegression:
         X = tf.placeholder(tf.float32, shape=(batch_size, n_features + 1))
         y = tf.placeholder(tf.float32, shape=(batch_size, 1))
 
-        W = tf.get_variable("weight", (n_features + 1, 1),
-                            initializer=tf.random_normal_initializer())
+        # To ensure multiple objects from this class have different weights
+        # (what is the standard way of dealing with this?)
+        with tf.variable_scope(self.name):
+            W = tf.get_variable("weight", (n_features + 1, 1),
+                                initializer=tf.random_normal_initializer())
+
 
         # Activation function shape (n_samples, 1)
         a = tf.sigmoid(tf.matmul(X, W))
@@ -136,7 +139,7 @@ class TFLogisticRegression:
         selecter = tf.concat([tf.zeros([1, 1]), tf.ones([n_features, 1])], 0)
 
         # Objective function.
-        cost_reg_term = (self.reg/2)*(tf.matmul(tf.transpose(W*selecter),
+        cost_reg_term = (reg/2)*(tf.matmul(tf.transpose(W*selecter),
                                                     W*selecter))/batch_size
         # J_vec contains the raw cost for each sample, shape (batch_size, 1)
         J_vec = (-y*tf.log(a+1e-7)-(1-y)*tf.log(1-a+1e-7))/batch_size

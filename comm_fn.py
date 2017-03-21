@@ -5,6 +5,7 @@ import numpy as np
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 from sklearn.model_selection import learning_curve, train_test_split
 
 
@@ -25,13 +26,11 @@ def load_glove_model(gloveFile, word_count=100000):
         word = string of the word we wish to load
         vector = 'n_features'-d vectors to describe the word
     """
-    print("Loading Glove Vectors")
     path = './data/gloveFile_done_%d.npy' % (word_count)
 
     # Saves time by loading existing file, if available.
     if os.path.exists(path):
         glove = np.load(path).item()
-        print(len(glove), " words loaded.")
     else:
         f = open(gloveFile,'r')
         glove = {}
@@ -47,7 +46,6 @@ def load_glove_model(gloveFile, word_count=100000):
                 break
         # Saves the vectors, so we can load it faster next time.
         np.save(path, glove)
-        print("Done.",len(glove)," words loaded!")
     return glove
 
 
@@ -272,7 +270,7 @@ def minibatch(rand, X_data, y_data, batch_size):
     return X_batch, y_batch
 
 
-def plot_curve(clf, X_train, y_train, title, label='label', color='b', cv=3,
+def plot_curve(clf, X_train, y_train, title, train_sizes, label='label', color='b', cv=3,
                figure=1):
     """ Plot curves using cross-validation set for hyperparmeter evaluation.
 
@@ -313,9 +311,8 @@ def plot_curve(clf, X_train, y_train, title, label='label', color='b', cv=3,
     plt.ylabel("Score")
     plt.grid()
 
-    # Must be a faster way of doing this (we only need the cv_scores).
-    train_sizes, train_scores, cv_scores = learning_curve(clf, X_train,
-                                                          y_train, cv=cv)
+    train_sizes, train_scores, cv_scores = learning_curve(
+        clf, X_train, y_train, train_sizes=train_sizes, cv=cv)
     cv_scores_mean = np.mean(cv_scores, axis=1)
     plt.plot(train_sizes, cv_scores_mean, 'o-', color=color, label=label)
     plt.legend(loc="best")
@@ -341,3 +338,70 @@ def remove_stop_words(full_sentences):
                              if w.lower() not in stop_words]
         filtered_sentences.append(filtered_sentence)
     return filtered_sentences
+
+
+def save_misclf_data(pos_ind, neg_ind, pos_sentences, neg_sentences, type):
+    """
+    Saves misclassified samples in two seperate text documents.
+    :param pos_ind: list
+        Indices of all positive samples that were classified as negative.
+    :param neg_ind:  list
+        Indices of all negative samples that were classified as positive.
+    :param pos_sentences: list
+        List of all positive samples.
+    :param neg_sentences: list
+            List of all positive samples.
+    :param type: string
+        Type of supervised learning problem e.g. 'SO'
+    :return:
+    """
+    pos_new = []
+    for sentence in pos_sentences:
+        # Make sentences easier to read
+        string_sent = [x.encode('UTF8') for x in sentence]
+        string_sent = " ".join(string_sent)
+        pos_new.append(string_sent)
+
+    # These sentences should have been classified as negative
+    misclf_pos = [pos_new[i] for i in pos_ind]
+
+    neg_new = []
+    for sentence in neg_sentences:
+        string_sent = [x.encode('UTF8') for x in sentence]
+        string_sent = " ".join(string_sent)
+        neg_new.append(string_sent)
+
+    # These sentences should have been classified as positive
+    misclf_neg = [neg_new[i-len(pos_sentences)] for i in neg_ind]
+
+    np.savetxt('./results/test_pos_%s.txt' % (type), misclf_pos,
+               delimiter='.', fmt='%s')
+    np.savetxt('./results/test_neg_%s.txt' % (type), misclf_neg,
+               delimiter='.', fmt='%s')
+
+
+def PC_comparision(X_train, X_test):
+    """
+    Preprocesses training and test data with PCA. Using 2, 5, 10, 20, 50, 100,
+    150, 200, 250 and 300 PCs.
+
+    :param X_train: array-like, shape (n_samples, n_features)
+    :param X_test: array-like, shape (n_samples, n_features)
+    :return: dictionary
+        Two dictionaries each in the same format. The number of PCs used
+        to construct the array as the key and the array itself (test or
+        training depending on dictionary) is the value.
+    """
+    PCs = [2, 5, 10, 20, 50, 100, 150, 200, 250, 300]
+    X_train_PCs = {}
+    X_test_PCs = {}
+    for pc in PCs:
+        pca = PCA(n_components=pc)
+        pca.fit(X_train)
+        X_train1 = pca.transform(X_train)
+        X_test1 = pca.transform(X_test)
+        X_train_PCs[pc] = X_train1
+        X_test_PCs[pc] = X_test1
+
+    print('Collected all PCs')
+    return X_train_PCs, X_test_PCs
