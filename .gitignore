@@ -5,3 +5,4 @@ glove.840B.300d.txt
 tester_file.py
 reg_tuned_*.pickle
 results
+/Conversation_tagging/data/
