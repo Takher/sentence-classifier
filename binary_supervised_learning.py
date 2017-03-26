@@ -43,7 +43,7 @@ args = parser.parse_args()
 BATCH_SIZE = 500
 MAX_ITER = 1000
 SEED = 0
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.006
 
 # Model now contains a dictionary {word:vector}. Where each word is a key
 # corresponding to a 'n_features'-d row vector, shape (n_features,).
