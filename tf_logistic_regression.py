@@ -1,4 +1,6 @@
 from __future__ import division
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # disable all debugging logs
 
 import tensorflow as tf
 import numpy as np
