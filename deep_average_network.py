@@ -3,10 +3,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # disable all debugging logs
 import tensorflow as tf
 import numpy as np
 from comm_fn import minibatch, standard
+from sklearn.metrics import average_precision_score
 
 # ToDo:
 # Create nn class
 # Create a cnn for nlp. Apply this convolution method https://arxiv.org/abs/1408.5882
+# Average precision
 
 
 def init_weights(shape):
@@ -78,5 +80,9 @@ for i in range(5):
     X_batch, y_batch = minibatch(rand, X_test, y_test_hot, batch_size=500)
     accuracy_list.append(sess.run(accuracy, {x_no_drop: X_batch, y_: y_batch, p_keep_input: P_KEEP_TEST}))
 
-print(sum(accuracy_list)/len(accuracy_list))
+print("Accuracy", sum(accuracy_list)/len(accuracy_list))
+
+predictions = sess.run(z3, {x_no_drop: X_test, y_: y_test_hot, p_keep_input: P_KEEP_TEST})
+ap_tf = average_precision_score(y_test_hot, predictions)
+print('Average precision: %.4f'%ap_tf)
 
