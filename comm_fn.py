@@ -420,7 +420,7 @@ def process_pca(n_components, X_train, X_test):
 def standard(args):
     # Dictionary {word:vector}, where each word is a key corresponding to a
     # 'n_features'-d row vector, shape (n_features,).
-    model = load_glove_model('glove.840B.300d.txt')
+    model = load_glove_model('./data/glove.840B.300d.txt')
 
     # Load data in to lists of positive and negative examples.
     pos, neg = load_data('SO', remove_stop=False)

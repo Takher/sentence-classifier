@@ -32,9 +32,9 @@ def gen_test_vals(n_values = 10, starting_factor = -5):
 def set_param(args, X_train, y_train):
     # Tune hyperparmeters (just regularisation for now)
     # Save time by loading existing file, if available.
-    if os.path.exists('reg_tuned_%s.pickle'%(args.input)):
+    if os.path.exists('./hyperparameters/reg_tuned_%s.pickle'%(args.input)):
         print('Using pre-tuned hyperparameters')
-        with open('reg_tuned_%s.pickle'%(args.input), 'rb') as f:
+        with open('./hyperparameters/reg_tuned_%s.pickle'%(args.input), 'rb') as f:
             reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd = pickle.load(f)
     else:
         print('Tuning hyperparameters...')
@@ -45,7 +45,7 @@ def set_param(args, X_train, y_train):
         reg_tuned_sgd = tune_param(X_train, y_train, 'sgd')
         print('reg_tuned to ', reg_tuned_sgd)
         # Save parameter
-        with open('reg_tuned_%s.pickle'%(args.input), 'wb') as f:
+        with open('./hyperparameters/reg_tuned_%s.pickle'%(args.input), 'wb') as f:
             pickle.dump([reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd], f)
     return reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd
 

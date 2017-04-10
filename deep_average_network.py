@@ -4,6 +4,11 @@ import tensorflow as tf
 import numpy as np
 from comm_fn import minibatch
 
+# ToDo:
+# Create nn class
+# Create a cnn for nlp. Apply this convolution method https://arxiv.org/abs/1408.5882
+
+
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
 
