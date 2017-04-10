@@ -114,6 +114,7 @@ def load_data(type='SO', loc='./data/', remove_stop=False):
         pos, neg = load_mr(loc)
     if type == 'SO':
         pos, neg = load_so(loc)
+        print(remove_stop)
     if type == 'CR':
         pos, neg = load_cr(loc)
     if type == 'MPQA':
@@ -425,9 +426,10 @@ def standard(args=None):
     # Load data in to lists of positive and negative examples. If no args
     # given, assume 'SO'.
     try:
-        pos, neg = load_data(args.input, remove_stop=False)
+        pos, neg = load_data(args.input, remove_stop=args.stop)
     except:
-        pos, neg = load_data('SO', remove_stop=False)
+        pos, neg = load_data('SO', remove_stop=args.stop)
+        print('Using default dataset: "SO"')
 
     # Shape (n_pos_samples, n_features)
     pos_vectors = np.asarray(sentences2vec(pos, model))
@@ -478,7 +480,7 @@ def parse_options():
     parser.add_argument('-i','--input',
                         help='Specify input data: "MR", "SO", "CR", "MPQA"',
                         choices=["MR", "SO", "CR", "MPQA"],
-                        required=True)
+                        default="SO")
     parser.add_argument('-p','--pca',
                         help='Specify the number of Principal components.',
                         type=int)
