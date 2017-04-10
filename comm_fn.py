@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os.path
+import argparse
 
 import numpy as np
 from nltk.tokenize import word_tokenize
@@ -7,6 +8,7 @@ from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.model_selection import learning_curve, train_test_split
+from sklearn.preprocessing import StandardScaler
 
 
 def load_glove_model(gloveFile, word_count=100000):
@@ -405,3 +407,81 @@ def PC_comparision(X_train, X_test):
 
     print('Collected all PCs')
     return X_train_PCs, X_test_PCs
+
+
+def process_pca(n_components, X_train, X_test):
+    # Optional PCA preprocessing
+    pca = PCA(n_components)
+    pca.fit(X_train)
+    X_train = pca.transform(X_train)
+    X_test = pca.transform(X_test)
+    return X_train, X_test
+
+def standard(args):
+    # Dictionary {word:vector}, where each word is a key corresponding to a
+    # 'n_features'-d row vector, shape (n_features,).
+    model = load_glove_model('glove.840B.300d.txt')
+
+    # Load data in to lists of positive and negative examples.
+    pos, neg = load_data('SO', remove_stop=False)
+
+    # Shape (n_pos_samples, n_features)
+    pos_vectors = np.asarray(sentences2vec(pos, model))
+    # Shape (n_neg_samples, n_features)
+    neg_vectors = np.asarray(sentences2vec(neg, model))
+
+    # Prepare a matrix containing both positive and negative samples
+    X = np.r_[pos_vectors, neg_vectors]
+    y = np.zeros(X.shape[0])
+    y[:pos_vectors.shape[0]] = 1.0
+
+    X_with_ind = np.c_[
+        range(X.shape[0]), X]  # Using 'range' to produce an index
+
+    # Randomly split the X and y arrays into 30/70 test/train split.
+    X_train, X_test, y_train, y_test = train_test_split(X_with_ind,
+                                                        y,
+                                                        test_size=0.3,
+                                                        random_state=0)
+    # Index to convert from X_test (shuffled data) back to X.
+    # For example, if sample 3 in y_test is missclassified, we use the third value
+    # from X_ind to get back the original index of the example. If this value is
+    # 300, this tells us that the 300th example has been missclassified.
+    X_ind = X_test[:, 0]
+
+    X_train = X_train[:, 1:]
+    X_test = X_test[:, 1:]
+
+    # Standardize features by removing the mean and scaling to unit variance
+    sc = StandardScaler()
+    sc.fit(X_train)
+    X_train = sc.transform(X_train)
+    X_test = sc.transform(X_test)
+
+    # Optional PCA preprocessing
+    if args.pca: X_train, X_test = process_pca(args.pca, X_train, X_test)
+
+    return X_train, X_test, y_train, y_test, X_ind
+
+def parse_options():
+    # Handles the command-line argument, which specifies the dataset to be used.
+    parser = argparse.ArgumentParser(description='Choose data to load into the'
+                                                 ' Logistic Regression'
+                                                 ' classifier.')
+    parser.add_argument('-i','--input',
+                        help='Specify input data: "MR", "SO", "CR", "MPQA"',
+                        choices=["MR", "SO", "CR", "MPQA"],
+                        required=True)
+    parser.add_argument('-p','--pca',
+                        help='Specify the number of Principal components.',
+                        type=int)
+    parser.add_argument('-s', '--stop', action='store_true',
+                        help='Using the -s or --stop flag, removes the stopword '
+                             'from the data.')
+    parser.add_argument('-d', '--data',
+                        help='Specify the dataset size you would like to use for '
+                             'producing learning curves.',
+                        type=int,
+                        nargs='+')
+
+    return parser.parse_args()

@@ -1,6 +1,8 @@
 from __future__ import print_function
 import numpy as np
 import operator
+import os
+import pickle
 
 from sklearn.model_selection import KFold
 from sklearn.metrics import average_precision_score
@@ -27,6 +29,25 @@ def gen_test_vals(n_values = 10, starting_factor = -5):
         test_values.extend((try_value_1, try_value_2))
     return test_values
 
+def set_param(args, X_train, y_train):
+    # Tune hyperparmeters (just regularisation for now)
+    # Save time by loading existing file, if available.
+    if os.path.exists('reg_tuned_%s.pickle'%(args.input)):
+        print('Using pre-tuned hyperparameters')
+        with open('reg_tuned_%s.pickle'%(args.input), 'rb') as f:
+            reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd = pickle.load(f)
+    else:
+        print('Tuning hyperparameters...')
+        reg_tuned_tf = tune_param(X_train, y_train, 'tf')
+        print('reg_tuned to ', reg_tuned_tf)
+        reg_tuned_lr = tune_param(X_train, y_train, 'lr')
+        print('reg_tuned to ', reg_tuned_lr)
+        reg_tuned_sgd = tune_param(X_train, y_train, 'sgd')
+        print('reg_tuned to ', reg_tuned_sgd)
+        # Save parameter
+        with open('reg_tuned_%s.pickle'%(args.input), 'wb') as f:
+            pickle.dump([reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd], f)
+    return reg_tuned_lr, reg_tuned_tf, reg_tuned_sgd
 
 def tune_param(X, y, type, max_iter=1000, batch_size=500, learning_rate=0.01,
                seed=0, test_values=None):
