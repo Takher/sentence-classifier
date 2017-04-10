@@ -87,7 +87,7 @@ def sentences2vec(sentences, glove):
     return sentence_vectors
 
 
-def load_data(type, loc='./data/', remove_stop=False):
+def load_data(type='SO', loc='./data/', remove_stop=False):
     """Loads data from the directory, loc.
 
     :param type: string  # Can I do this to speed things up?
@@ -417,13 +417,17 @@ def process_pca(n_components, X_train, X_test):
     X_test = pca.transform(X_test)
     return X_train, X_test
 
-def standard(args):
+def standard(args=None):
     # Dictionary {word:vector}, where each word is a key corresponding to a
     # 'n_features'-d row vector, shape (n_features,).
     model = load_glove_model('./data/glove.840B.300d.txt')
 
-    # Load data in to lists of positive and negative examples.
-    pos, neg = load_data('SO', remove_stop=False)
+    # Load data in to lists of positive and negative examples. If no args
+    # given, assume 'SO'.
+    try:
+        pos, neg = load_data(args.input, remove_stop=False)
+    except:
+        pos, neg = load_data('SO', remove_stop=False)
 
     # Shape (n_pos_samples, n_features)
     pos_vectors = np.asarray(sentences2vec(pos, model))
@@ -459,7 +463,10 @@ def standard(args):
     X_test = sc.transform(X_test)
 
     # Optional PCA preprocessing
-    if args.pca: X_train, X_test = process_pca(args.pca, X_train, X_test)
+    try:
+        if args.pca: X_train, X_test = process_pca(args.pca, X_train, X_test)
+    except:
+        pass
 
     return X_train, X_test, y_train, y_test, X_ind
 

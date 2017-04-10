@@ -2,7 +2,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # disable all debugging logs
 import tensorflow as tf
 import numpy as np
-from comm_fn import minibatch
+from comm_fn import minibatch, standard
 
 # ToDo:
 # Create nn class
@@ -49,9 +49,6 @@ predict_op = tf.argmax(z3, 1)
 correct_prediction = tf.equal(tf.argmax(z3,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 rand = np.random.RandomState(0)
-
-
-from comm_fn import standard
 
 X_train, X_test, y_train, y_test, X_ind = standard()
 
